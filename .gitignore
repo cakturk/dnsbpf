@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: GPL-2.0
+# Git ignore file for dnsbpf
+
+# Build artifacts
+*.o
+*.ko
+*.cmd
+*.mod
+*.mod.c
+*.symvers
+*.order
+*.so
+*.a
+
+# Binaries
+dnsbpf
+dnsbpf_kern.o
+dnsbpf_user
+
+# Debug files
+*.dwo
+*.dwp
+
+# Editor and IDE files
+*~
+*.swp
+*.swo
+.*.swp
+.*.swo
+*.orig
+.vscode/
+.idea/
+*.sublime-*
+
+# Build directories
+build/
+dist/
+*.egg-info/
+
+# Test outputs
+*.log
+test-results/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
