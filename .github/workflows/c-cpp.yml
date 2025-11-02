@@ -13,11 +13,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: configure
-      run: ./configure
+
+    - name: install build deps
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y --no-install-recommends \
+                clang \
+                libbpf-dev \
+                make \
+                linux-headers-generic \
+                linux-headers-$(uname -r) \
+                linux-libc-dev
+        sudo ln -s /usr/include/x86_64-linux-gnu/asm /usr/include/asm
+
     - name: make
       run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
