@@ -28,3 +28,43 @@ jobs:
 
     - name: make
       run: make
+
+    - name: Load BPF program with bpftool
+      run: |
+        echo "Checking if bpftool is available..."
+        which bpftool || echo "bpftool not in PATH, trying to install..."
+
+        # Install bpftool if not available
+        if ! command -v bpftool &> /dev/null; then
+          sudo apt-get update -y
+          sudo apt-get install -y linux-tools-common linux-tools-generic || true
+        fi
+
+        echo "Testing BPF object file..."
+        # Verify the BPF object exists
+        ls -lh dnsbpf_kern.o
+        file dnsbpf_kern.o
+
+        # Try to load the BPF program with bpftool
+        if command -v bpftool &> /dev/null; then
+          echo "Loading BPF program with bpftool (verifier check)..."
+
+          # Load the BPF program - this runs it through the verifier
+          sudo bpftool prog load dnsbpf_kern.o /sys/fs/bpf/dnsbpf_test type classifier || {
+            echo "❌ Failed to load BPF program"
+            exit 1
+          }
+
+          echo "✅ BPF program loaded successfully (passed verifier)"
+
+          # Show loaded program info
+          sudo bpftool prog show
+          sudo bpftool map show
+
+          # Cleanup: unpin and unload
+          sudo rm -f /sys/fs/bpf/dnsbpf_test
+          echo "✅ BPF program unloaded"
+        else
+          echo "⚠️  bpftool not available, skipping BPF load test"
+          exit 1
+        fi
