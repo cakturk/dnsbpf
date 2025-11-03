@@ -5,7 +5,8 @@
 CLANG		?= clang
 LLC		?= llc
 CC		?= gcc
-STRIP		?= $(shell command -v llvm-strip 2>/dev/null || echo strip)
+LLVM_STRIP	:= $(shell command -v llvm-strip 2>/dev/null)
+STRIP		?= $(LLVM_STRIP)
 
 # Directories
 SRC_DIR		:= src
@@ -46,7 +47,14 @@ all: $(KERN_OBJ) $(USER_BIN)
 $(KERN_OBJ): $(KERN_SRC) $(SRC_DIR)/common.h $(SRC_DIR)/dns_parser.h
 	@echo "  CLANG    $@"
 	@$(CLANG) $(BPF_CFLAGS) -c $(KERN_SRC) -o $@
-	@$(STRIP) -g $@
+	@if [ -n "$(strip $(STRIP))" ]; then \
+		echo "  STRIP    $@"; \
+		if ! $(STRIP) -g $@; then \
+			echo "  WARN     strip failed for $@ (skipping)"; \
+		fi; \
+	else \
+		echo "  STRIP    skip (llvm-strip not found)"; \
+	fi
 
 # Build user-space binary
 $(USER_BIN): $(USER_SRC) $(SRC_DIR)/common.h
