@@ -54,7 +54,7 @@ jobs:
       uses: cilium/little-vm-helper@v0.0.27
       with:
         test-name: dnsbpf-bpftool-${{ github.run_id }}
-        host-mount: ${{ github.workspace }}
+        host-mount: .
         images-folder-parent: ${{ runner.temp }}/lvh
         install-dependencies: true
         image: kind
