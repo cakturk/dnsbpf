@@ -69,7 +69,10 @@ jobs:
             mount -t bpf bpf /sys/fs/bpf
           fi
           echo "checking fs layout"
+          pwd
           ls -l
+          ls -l ..
+          echo "end of fs layout check"
           ls -lh /host/bpf-artifacts/dnsbpf_kern.o
           echo "checking kernel version"
           uname -a
