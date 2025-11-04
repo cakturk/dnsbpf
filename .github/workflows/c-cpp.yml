@@ -32,24 +32,6 @@ jobs:
     - name: make
       run: make
 
-    - name: Upload BPF artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dnsbpf-bpf-artifacts
-        path: |
-          dnsbpf_kern.o
-
-  bpftool-verifier:
-    name: BPF Verifier (LVH)
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Download BPF artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: dnsbpf-bpf-artifacts
-        path: bpf-artifacts
-
     - name: Run bpftool verifier inside LVH VM
       uses: cilium/little-vm-helper@v0.0.27
       with:
@@ -63,7 +45,8 @@ jobs:
           set -euo pipefail
           export DEBIAN_FRONTEND=noninteractive
           apt-get update
-          apt-get install -y --no-install-recommends bpftool file
+          apt-get install -y --no-install-recommends bpftool file clang make
+          ln -s /usr/include/x86_64-linux-gnu/asm /usr/include/asm
           mkdir -p /sys/fs/bpf
           if ! mountpoint -q /sys/fs/bpf; then
             mount -t bpf bpf /sys/fs/bpf
@@ -76,15 +59,16 @@ jobs:
           ls -l /host
           echo "======= end of host check ========="
           echo " ----- /host/bpf-artifacts -------"
-          ls -l /host/bpf-artifacts
           echo "------ end of bpf-artifacts -------"
           echo "end of fs layout check"
-          ls -lh /host/bpf-artifacts/dnsbpf_kern.o
           echo "checking kernel version"
           uname -a
-          file /host/bpf-artifacts/dnsbpf_kern.o
+          cd /host
+          rm -f dnsbpf_kern.o
+          make dnsbpf_kern.o
+          file /host/dnsbpf_kern.o
           trap 'rm -f /sys/fs/bpf/dnsbpf_test' EXIT
-          bpftool prog load /host/bpf-artifacts/dnsbpf_kern.o /sys/fs/bpf/dnsbpf_test type classifier
+          bpftool prog load /host/dnsbpf_kern.o /sys/fs/bpf/dnsbpf_test type classifier
           bpftool prog show
           bpftool map show
 
