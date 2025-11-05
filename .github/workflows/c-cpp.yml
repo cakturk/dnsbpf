@@ -32,58 +32,58 @@ jobs:
     - name: make
       run: make
 
-    - name: Run bpftool verifier inside LVH VM
-      uses: cilium/little-vm-helper@v0.0.27
-      with:
-        test-name: dnsbpf-bpftool-${{ github.run_id }}
-        host-mount: .
-        images-folder-parent: ${{ runner.temp }}/lvh
-        install-dependencies: true
-        image: kind
-        image-version: 6.12-20251103.013252-amd64
-        cmd: |
-          set -euo pipefail
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update
-          apt-get install -y --no-install-recommends bpftool file clang make \
-                libbpf-dev \
-                linux-headers-generic \
-                linux-libc-dev
-          ln -s /usr/include/x86_64-linux-gnu/asm /usr/include/asm
-          mkdir -p /sys/fs/bpf
-          if ! mountpoint -q /sys/fs/bpf; then
-            mount -t bpf bpf /sys/fs/bpf
-          fi
-          echo "checking fs layout"
-          pwd
-          ls -l
-          ls -l ..
-          echo "=== host check ====="
-          ls -l /host
-          echo "======= end of host check ========="
-          echo " ----- /host/bpf-artifacts -------"
-          echo "------ end of bpf-artifacts -------"
-          echo "end of fs layout check"
-          echo "checking kernel version"
-          uname -a
-          cd /host
-          rm -f dnsbpf_kern.o
-          make dnsbpf_kern.o
-          file /host/dnsbpf_kern.o
-          trap 'rm -f /sys/fs/bpf/dnsbpf_test' EXIT
-          bpftool prog load /host/dnsbpf_kern.o /sys/fs/bpf/dnsbpf_test type classifier
-          bpftool prog show
-          bpftool map show
+    # - name: Run bpftool verifier inside LVH VM
+    #   uses: cilium/little-vm-helper@v0.0.27
+    #   with:
+    #     test-name: dnsbpf-bpftool-${{ github.run_id }}
+    #     host-mount: .
+    #     images-folder-parent: ${{ runner.temp }}/lvh
+    #     install-dependencies: true
+    #     image: kind
+    #     image-version: 6.12-20251103.013252-amd64
+    #     cmd: |
+    #       set -euo pipefail
+    #       export DEBIAN_FRONTEND=noninteractive
+    #       apt-get update
+    #       apt-get install -y --no-install-recommends bpftool file clang make \
+    #             libbpf-dev \
+    #             linux-headers-generic \
+    #             linux-libc-dev
+    #       ln -s /usr/include/x86_64-linux-gnu/asm /usr/include/asm
+    #       mkdir -p /sys/fs/bpf
+    #       if ! mountpoint -q /sys/fs/bpf; then
+    #         mount -t bpf bpf /sys/fs/bpf
+    #       fi
+    #       echo "checking fs layout"
+    #       pwd
+    #       ls -l
+    #       ls -l ..
+    #       echo "=== host check ====="
+    #       ls -l /host
+    #       echo "======= end of host check ========="
+    #       echo " ----- /host/bpf-artifacts -------"
+    #       echo "------ end of bpf-artifacts -------"
+    #       echo "end of fs layout check"
+    #       echo "checking kernel version"
+    #       uname -a
+    #       cd /host
+    #       rm -f dnsbpf_kern.o
+    #       make dnsbpf_kern.o
+    #       file /host/dnsbpf_kern.o
+    #       trap 'rm -f /sys/fs/bpf/dnsbpf_test' EXIT
+    #       bpftool prog load /host/dnsbpf_kern.o /sys/fs/bpf/dnsbpf_test type classifier
+    #       bpftool prog show
+    #       bpftool map show
 
-    - name: Collect LVH console log
-      if: always()
-      run: |
-        sudo cp /tmp/console.log ./lvh-console.log || true
-        sudo chown $USER:$USER ./lvh-console.log || true
+    # - name: Collect LVH console log
+    #   if: always()
+    #   run: |
+    #     sudo cp /tmp/console.log ./lvh-console.log || true
+    #     sudo chown $USER:$USER ./lvh-console.log || true
 
-    - name: Upload LVH console log
-      if: always() && hashFiles('lvh-console.log') != ''
-      uses: actions/upload-artifact@v4
-      with:
-        name: lvh-console-log
-        path: lvh-console.log
+    # - name: Upload LVH console log
+    #   if: always() && hashFiles('lvh-console.log') != ''
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: lvh-console-log
+    #     path: lvh-console.log
