@@ -188,7 +188,7 @@ static int parse_dns_qname(void *data, const void *data_end,
 		domain_out[domain_len] = '\0';
 
 	/* Calculate wire format length */
-	return (int)(p - qname_start);
+	return p - qname_start;
 }
 
 /*
